@@ -1,0 +1,7 @@
+
+mysql:
+  host: db
+  port: "3306"
+  user: root
+  password: "123"
+  database: toy_planet
