@@ -45,15 +45,15 @@ app.add_middleware(
 # init
 # Include the FAQ router
 app.include_router(mysql_router, prefix="/mysql")
-app.include_router(rec_router, prefix="/mysql")
-app.include_router(search_router, prefix="/mysql")
+app.include_router(rec_router, prefix="/rec")
+app.include_router(search_router, prefix="/search")
 
 if __name__ == "__main__":
     logger.info("Starting nova API server")
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=2023,
-        reload=False,
+        port=8000,
+        reload=True,
         log_level="info",
     )

@@ -6,6 +6,7 @@ import logging
 import random
 import threading
 import time
+from http import HTTPStatus
 
 import schedule
 from cachetools import LRUCache, TTLCache
@@ -63,7 +64,7 @@ def insert_new_cache():
             query_sql = f"""
             SELECT set_code, hot
             FROM {TABLE_NAME}
-            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 3 DAY)
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1000 DAY) -- todo: 上线时调整新品阈值时间
             ORDER BY hot DESC
             LIMIT 1000
             """
@@ -128,7 +129,7 @@ def get_hot_by_uid(trace_id, uid, topk):
         all_items = list(hot_cache.items())
 
         if len(all_items) < topk:
-            return {"code": 1, "msg": f"trace_id: {trace_id}, 热门 item 不够"}
+            return {"code": HTTPStatus.BAD_REQUEST, "msg": f"trace_id: {trace_id}, 热门 item 不够"}
 
         all_items = sorted(all_items, key=lambda x: x[1], reverse=True)
 
@@ -145,19 +146,22 @@ def get_hot_by_uid(trace_id, uid, topk):
             tmp = random.sample(all_items, topk - len(tok_result))
             tok_result.extend([_[0] for _ in tmp])
 
-        return {"code": 0, "msg": "ok", "data": {"tok_result": tok_result}}
+        return {"code": HTTPStatus.OK, "msg": "ok", "data": {"tok_result": tok_result}}
     except Exception as e:
         logger.error(f"trace_id: {trace_id}, Error in get_hot_by_uid: {e}")
         return {
-            "code": 1,
+            "code": HTTPStatus.INTERNAL_SERVER_ERROR,
             "msg": f"trace_id: {trace_id}, Error in get_hot_by_uid: {e}",
         }
 
 
 # 获取新品
 def get_new_by_uid(trace_id, uid, topk):
+    """
+        使用用户历史记录，过滤用户浏览过的
+    """
     try:
-        uid_hist = user_history_cache.get(uid, None)
+        uid_hist = user_history_cache.get(uid, [])
 
         all_items = list(new_cache.items())
         all_items = sorted(all_items, key=lambda x: x[1], reverse=True)
@@ -175,10 +179,10 @@ def get_new_by_uid(trace_id, uid, topk):
             tmp = random.sample(all_items, topk - len(tok_result))
             tok_result.extend([_[0] for _ in tmp])
 
-        return {"code": 0, "msg": "ok", "data": {"tok_result": tok_result}}
+        return {"code": HTTPStatus.OK, "msg": "ok", "data": {"tok_result": tok_result}}
     except Exception as e:
         logger.error(f"trace_id: {trace_id}, Error in get_new_by_uid: {e}")
         return {
-            "code": 1,
+            "code": HTTPStatus.INTERNAL_SERVER_ERROR,
             "msg": f"trace_id: {trace_id}, Error in get_new_by_uid: {e}",
         }

@@ -3,6 +3,7 @@
 # @Author : zip
 # @Moto   : Knowledge comes from decomposition
 import logging
+from http import HTTPStatus
 from typing import Dict, Optional
 
 from fastapi import APIRouter
@@ -45,7 +46,7 @@ async def search_hot_server(recRequest: SEARCHRequest):
         if keyword is None:
             logger.error(f"trace_id={trace_id}, 数据中缺少keyword字段")
             return SEARCHResponse(
-                code=1, msg="插入数据失败, 数据中缺少keyword字段", data={}
+                code=HTTPStatus.BAD_REQUEST, msg="插入数据失败, 数据中缺少keyword字段", data={}
             )
 
         # 获得 热门数据 set_code
@@ -54,7 +55,7 @@ async def search_hot_server(recRequest: SEARCHRequest):
             logger.error(
                 f"trace_id={trace_id}, 获得热门推荐失败， error: {data['msg']}"
             )
-            return SEARCHResponse(code=1, msg="获得热门推荐失败", data={})
+            return SEARCHResponse(code=HTTPStatus.INTERNAL_SERVER_ERROR, msg="获得热门推荐失败", data={})
         hot_item = data["data"]["tok_result"]
 
         # 基于这个结果，从库中获取到 热门set_code 的详情数据
@@ -63,8 +64,8 @@ async def search_hot_server(recRequest: SEARCHRequest):
             logger.info(f"获得热门推荐: tace_id: {trace_id}")
 
         return SEARCHResponse(
-            code=data["code"], msg=data["msg"], data=data.get("data", {})
+            code=HTTPStatus.OK, msg=data["msg"], data=data.get("data", {})
         )
     except Error as e:
         logger.error(f"获得热门推荐失败: {e}")
-        return SEARCHResponse(code=1, msg=f"获得热门推荐失败: {e}", data={})
+        return SEARCHResponse(code=HTTPStatus.INTERNAL_SERVER_ERROR, msg=f"获得热门推荐失败: {e}", data={})

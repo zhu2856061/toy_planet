@@ -3,6 +3,7 @@
 # @Author : zip
 # @Moto   : Knowledge comes from decomposition
 import logging
+from http import HTTPStatus
 from typing import Any, Dict
 
 from mysql.connector import Error
@@ -24,10 +25,10 @@ def insert(table_name, data: Dict[str, Any]):
         cursor.execute(sql, list(data.values()))
         mysql_client.commit()
         logger.info(f"成功插入数据到 {table_name}")
-        return {"code": 0, "msg": "ok", "data": {"lastrowid": cursor.lastrowid}}
+        return {"code": HTTPStatus.OK, "msg": "ok", "data": {"lastrowid": cursor.lastrowid}}
     except Error as e:
         logger.error(f"插入数据失败: {e}")
-        return {"code": 1, "msg": f"插入数据失败: {e}"}
+        return {"code": HTTPStatus.INTERNAL_SERVER_ERROR, "msg": f"插入数据失败: {e}"}
     finally:
         cursor.close()
 
@@ -46,10 +47,10 @@ def select(table_name, conditions: Dict[str, Any]):
 
         lines = cursor.fetchall()
         logger.info(f"查询到 {len(lines)} 条数据从 {table_name}")
-        return {"code": 0, "msg": "ok", "data": {"lines": lines}}
+        return {"code": HTTPStatus.OK, "msg": "ok", "data": {"lines": lines}}
     except Error as e:
         logger.error(f"查询数据失败: {e}")
-        return {"code": 1, "msg": f"查询数据失败: {e}"}
+        return {"code": HTTPStatus.INTERNAL_SERVER_ERROR, "msg": f"查询数据失败: {e}"}
     finally:
         cursor.close()
 
@@ -65,10 +66,10 @@ def select_by_set_codes(table_name, set_codes: list):
         cursor.execute(query_sql, set_codes)
         lines = cursor.fetchall()
         logger.info(f"查询到 {len(lines)} 条数据")
-        return {"code": 0, "msg": "ok", "data": {"lines": lines}}
+        return {"code": HTTPStatus.OK, "msg": "ok", "data": {"lines": lines}}
     except Error as e:
         logger.error(f"查询数据失败: {e}")
-        return {"code": 1, "msg": f"查询数据失败: {e}"}
+        return {"code": HTTPStatus.INTERNAL_SERVER_ERROR, "msg": f"查询数据失败: {e}"}
     finally:
         cursor.close()
 
@@ -88,10 +89,10 @@ def update(table_name, data: Dict[str, Any]):
         cursor.execute(sql, list(data.values()))
         mysql_client.commit()
         logger.info(f"成功更新 {cursor.rowcount} 条数据在 {table_name}")
-        return {"code": 0, "msg": "ok", "data": {"rowcount": cursor.rowcount}}
+        return {"code": HTTPStatus.OK, "msg": "ok", "data": {"rowcount": cursor.rowcount}}
     except Error as e:
         logger.error(f"更新数据失败: {e}")
-        return {"code": 1, "msg": f"更新数据失败: {e}"}
+        return {"code": HTTPStatus.INTERNAL_SERVER_ERROR, "msg": f"更新数据失败: {e}"}
     finally:
         cursor.close()
 
@@ -107,10 +108,10 @@ def delete(table_name, conditions: Dict[str, Any]):
         cursor.execute(sql, list(conditions.values()))
         mysql_client.commit()
         logger.info(f"成功删除 {cursor.rowcount} 条数据从 {table_name}")
-        return {"code": 0, "msg": "ok", "data": {"rowcount": cursor.rowcount}}
+        return {"code": HTTPStatus.OK, "msg": "ok", "data": {"rowcount": cursor.rowcount}}
     except Error as e:
         logger.error(f"删除数据失败: {e}")
-        return {"code": 1, "msg": f"删除数据失败: {e}"}
+        return {"code": HTTPStatus.INTERNAL_SERVER_ERROR, "msg": f"删除数据失败: {e}"}
     finally:
         cursor.close()
 
@@ -151,10 +152,10 @@ def query_by_page(table_name, page: int, page_size: int):
         lines = cursor.fetchall()
 
         logger.info(f"页码 {page}，每页 {page_size} 条，查询到 {len(lines)} 条数据")
-        return {"code": 0, "msg": "ok", "data": {"lines": lines}}
+        return {"code": HTTPStatus.OK, "msg": "ok", "data": {"lines": lines}}
 
     except Error as e:
         logger.error(f"分页查询 toy_kit 表失败: {e}")
-        return {"code": 1, "msg": f"查询数据失败: {e}"}
+        return {"code": HTTPStatus.INTERNAL_SERVER_ERROR, "msg": f"查询数据失败: {e}"}
     finally:
         cursor.close()
