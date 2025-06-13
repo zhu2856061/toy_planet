@@ -10,6 +10,7 @@ from mysql.connector import Error
 
 from nova import mysql_client
 from nova.utils.common import timer
+import mysql.connector
 
 logger = logging.getLogger(__name__)
 
@@ -36,16 +37,24 @@ def insert(table_name, data: Dict[str, Any]):
 @timer
 def select(table_name, conditions: Dict[str, Any]):
     """查询数据"""
+    conn = mysql.connector.connect(
+        host="127.0.0.1",
+        port=3306,
+        user="root",
+        password="123",
+        database="toy_planet",
+        charset="utf8mb4",  # 指定字符集为 utf8mb4
+        collation="utf8mb4_unicode_ci",  # 指定排序规则
+    )
+    cursor = conn.cursor(dictionary=True)
+
     try:
-        cursor = mysql_client.cursor(dictionary=True)
-
         sql = f"SELECT * FROM {table_name}"
-
         where_clause = " AND ".join([f"{key} = %s" for key in conditions.keys()])
         sql += f" WHERE {where_clause}"
         cursor.execute(sql, list(conditions.values()))
-
         lines = cursor.fetchall()
+
         logger.info(f"查询到 {len(lines)} 条数据从 {table_name}")
         return {"code": HTTPStatus.OK, "msg": "ok", "data": {"lines": lines}}
     except Error as e:
