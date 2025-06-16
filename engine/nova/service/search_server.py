@@ -9,8 +9,10 @@ from typing import Dict, Optional
 from fastapi import APIRouter
 from mysql.connector import Error
 from pydantic import BaseModel, Field
+import mysql.connector
 
 from nova.model import TOY_KIT_TABLE_NAME, get_hot_by_keyword, select_by_set_codes
+from nova.model import get_set_by_query
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,7 @@ search_router = APIRouter(
 # 🌟
 class SEARCHRequest(BaseModel):
     trace_id: Optional[str] = None
-    search_data: Dict = Field(..., description="搜索对象信息")
+    query : Optional[str] = None 
 
 
 class SEARCHResponse(BaseModel):
@@ -69,3 +71,26 @@ async def search_hot_server(recRequest: SEARCHRequest):
     except Error as e:
         logger.error(f"获得热门推荐失败: {e}")
         return SEARCHResponse(code=HTTPStatus.INTERNAL_SERVER_ERROR, msg=f"获得热门推荐失败: {e}", data={})
+
+
+@search_router.post("/set", response_model=SEARCHResponse)
+async def search_set_server(searchRequest: SEARCHRequest):
+    """
+        1. 套装搜索服务
+    """
+
+
+    try:
+        trace_id = searchRequest.trace_id
+        query = searchRequest.query
+        data = get_set_by_query(query)
+        if data["code"] == HTTPStatus.OK:
+            logger.info(f"获得套装搜索结果: trace_id: {trace_id}")
+
+        return SEARCHResponse(
+            code=data["code"], msg=data["msg"], data=data.get("data", {})
+        )
+    except Error as e:
+        logger.error(f"获得套装搜索失败: {e}")
+        return SEARCHResponse(code=HTTPStatus.INTERNAL_SERVER_ERROR, msg=f"获得套装搜索失败: {e}", data={})
+

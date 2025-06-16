@@ -5,6 +5,7 @@ from .hot_rec import (
     start_cache_update_thread,
 )
 from .hot_search import get_hot_by_keyword
+from .search_set import get_set_by_query
 from .op_mysql import delete, insert, query_by_page, select, select_by_set_codes, update
 from .toy_brands import TABLE_NAME as TOY_BRANDS_TABLE_NAME
 from .toy_brands import create_toy_brands_table
