@@ -14,10 +14,10 @@ from mysql.connector import Error
 
 from nova import mysql_client
 
-from .toy_kit import TABLE_NAME
 
 logger = logging.getLogger(__name__)
 
+SET_TABLE_NAME = "set_info"
 
 def get_set_by_query(query):
     """
@@ -37,13 +37,13 @@ def get_set_by_query(query):
 
     sql = f"""
         SELECT * 
-        FROM TOY_KIT
+        FROM {SET_TABLE_NAME}
         WHERE name LIKE %s
     """
     cursor.execute(sql, (f"%{query}%",))
     lines = cursor.fetchall()
 
-    logger.info(f"查询到 {len(lines)} 条数据从 kit_table")
+    logger.info(f"查询到 {len(lines)} 条数据从 {SET_TABLE_NAME}")
     cursor.close()
     
     return {"code": HTTPStatus.OK, "msg": "ok", "data": {"lines": lines}}

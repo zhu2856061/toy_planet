@@ -10,7 +10,8 @@ from nova import mysql_client
 
 logger = logging.getLogger(__name__)
 
-TABLE_NAME = "TOY_KIT"
+# TABLE_NAME = "TOY_KIT"
+TABLE_NAME = "set_info" 
 
 
 def create_toy_kit_table():

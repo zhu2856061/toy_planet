@@ -35,9 +35,9 @@ def insert_hot_cache():
         with hot_cache_lock:
             cursor = mysql_client.cursor(dictionary=True)
             query_sql = f"""
-            SELECT set_code, hot
+            SELECT set_code, is_hot
             FROM {TABLE_NAME}
-            ORDER BY hot DESC
+            ORDER BY is_hot DESC
             LIMIT 1000
             """
             cursor.execute(query_sql)
@@ -46,7 +46,7 @@ def insert_hot_cache():
             # 写入cacahe
 
             for result in results:
-                hot_cache[result["set_code"]] = result["hot"]  # type: ignore
+                hot_cache[result["set_code"]] = result["is_hot"]  # type: ignore
 
             logger.info(f"写入热门缓存 {len(results)} 条数据")
 
@@ -62,10 +62,10 @@ def insert_new_cache():
         with new_cache_lock:
             cursor = mysql_client.cursor(dictionary=True)
             query_sql = f"""
-            SELECT set_code, hot
+            SELECT set_code, is_hot
             FROM {TABLE_NAME}
             WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1000 DAY) -- todo: 上线时调整新品阈值时间
-            ORDER BY hot DESC
+            ORDER BY is_hot DESC
             LIMIT 1000
             """
             cursor.execute(query_sql)
@@ -73,7 +73,7 @@ def insert_new_cache():
 
             # 写入cacahe
             for result in results:
-                new_cache[result["set_code"]] = result["hot"]  # type: ignore
+                new_cache[result["set_code"]] = result["is_hot"]  # type: ignore
 
             logger.info(f"写入新品缓存 {len(results)} 条数据")
 
@@ -162,7 +162,6 @@ def get_new_by_uid(trace_id, uid, topk):
     """
     try:
         uid_hist = user_history_cache.get(uid, [])
-
         all_items = list(new_cache.items())
         all_items = sorted(all_items, key=lambda x: x[1], reverse=True)
 

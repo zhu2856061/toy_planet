@@ -15,7 +15,7 @@ from .toy_themes import TABLE_NAME as TOY_THEMES_TABLE_NAME
 from .toy_themes import create_toy_themes_table
 
 create_toy_brands_table()
-create_toy_kit_table()
+# create_toy_kit_table()
 # insert_kit_table()
 create_toy_themes_table()
 start_cache_update_thread()
